@@ -19,12 +19,13 @@ namespace Grocery.Core.Data.Repositories
                         );
                     ");
 
-            List<string> insertQueries = [@"INSERT OR IGNORE INTO GroceryListItems(GroceryListId, ProductId, Amount) VALUES(1, 1, 3)",
-                                            @"INSERT OR IGNORE INTO GroceryListItems(GroceryListId, ProductId, Amount) VALUES(2, 2, 1)",
-                                            @"INSERT OR IGNORE INTO GroceryListItems(GroceryListId, ProductId, Amount) VALUES(3, 3, 4)",
-                                            @"INSERT OR IGNORE INTO GroceryListItems(GroceryListId, ProductId, Amount) VALUES(4, 1, 2)",
-                                            @"INSERT OR IGNORE INTO GroceryListItems(GroceryListId, ProductId, Amount) VALUES(5, 2, 5)"
-                                           ];
+            List<string> insertQueries = [
+                @"INSERT OR IGNORE INTO GroceryListItems(GroceryListId, ProductId, Amount) VALUES(1, 1, 3)",
+                @"INSERT OR IGNORE INTO GroceryListItems(GroceryListId, ProductId, Amount) VALUES(2, 2, 1)",
+                @"INSERT OR IGNORE INTO GroceryListItems(GroceryListId, ProductId, Amount) VALUES(3, 3, 4)",
+                @"INSERT OR IGNORE INTO GroceryListItems(GroceryListId, ProductId, Amount) VALUES(4, 1, 2)",
+                @"INSERT OR IGNORE INTO GroceryListItems(GroceryListId, ProductId, Amount) VALUES(5, 2, 5)"
+            ];
             InsertMultipleWithTransaction(insertQueries);
             GetAll();
         }
@@ -53,7 +54,24 @@ namespace Grocery.Core.Data.Repositories
 
         public List<GroceryListItem> GetAllOnGroceryListId(int id)
         {
-            return groceryListItems.Where(g => g.GroceryListId == id).ToList();
+            List<GroceryListItem> selectedItems = new();
+            string selectQuery = $"SELECT Id, GroceryListId, ProductId, Amount FROM GroceryListItems WHERE Id = {id}";
+            OpenConnection();
+            using (SqliteCommand command = new(selectQuery, Connection))
+            {
+                SqliteDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int item_id = reader.GetInt32(0);
+                    int groceryListId = reader.GetInt32(1);
+                    int productId = reader.GetInt32(2);
+                    int amount = reader.GetInt32(3);
+                    selectedItems.Add(new(id, groceryListId, productId, amount));
+                }
+            }
+            CloseConnection();
+            return selectedItems;
         }
 
         public GroceryListItem Add(GroceryListItem item)
