@@ -11,6 +11,7 @@ namespace Grocery.Core.Data.Repositories
         public GroceryListItemsRepository()
         {
             CreateTable(@"
+                        DROP TABLE IF EXISTS GroceryListItems;
                         CREATE TABLE IF NOT EXISTS GroceryListItems (
                             [Id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                             [GroceryListId] INTEGER NOT NULL,
@@ -55,7 +56,7 @@ namespace Grocery.Core.Data.Repositories
         public List<GroceryListItem> GetAllOnGroceryListId(int id)
         {
             List<GroceryListItem> selectedItems = new();
-            string selectQuery = $"SELECT Id, GroceryListId, ProductId, Amount FROM GroceryListItems WHERE Id = {id}";
+            string selectQuery = $"SELECT Id, GroceryListId, ProductId, Amount FROM GroceryListItems WHERE GroceryListId = {id}";
             OpenConnection();
             using (SqliteCommand command = new(selectQuery, Connection))
             {
@@ -76,10 +77,25 @@ namespace Grocery.Core.Data.Repositories
 
         public GroceryListItem Add(GroceryListItem item)
         {
-            int newId = groceryListItems.Max(g => g.Id) + 1;
-            item.Id = newId;
-            groceryListItems.Add(item);
-            return Get(item.Id);
+            string addQuery = $@"
+                INSERT INTO GroceryListItems (GroceryListId, ProductId, Amount)
+                VALUES ({item.GroceryListId}, {item.ProductId}, {item.Amount});
+            ";
+            OpenConnection();
+            using (SqliteCommand command = new(addQuery, Connection))
+            {
+                command.ExecuteNonQuery();
+            }
+
+
+            int newId;
+            using (SqliteCommand command = new("SELECT last_insert_rowid();", Connection))
+            {
+                newId = Convert.ToInt32(command.ExecuteScalar());
+            }
+            CloseConnection();
+
+            return Get(newId);
         }
 
         public GroceryListItem? Delete(GroceryListItem item)
@@ -89,14 +105,37 @@ namespace Grocery.Core.Data.Repositories
 
         public GroceryListItem? Get(int id)
         {
-            return groceryListItems.FirstOrDefault(g => g.Id == id);
+            GroceryListItem? groceryListItemOnID = null;
+            string getItemQuery = $"SELECT * FROM GroceryListItems WHERE Id == {id}";
+
+            OpenConnection();
+            using (SqliteCommand command = new(getItemQuery, Connection))
+            {
+                SqliteDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int item_id = reader.GetInt32(0);
+                    int groceryListId = reader.GetInt32(1);
+                    int productId = reader.GetInt32(2);
+                    int amount = reader.GetInt32(3);
+                    groceryListItemOnID = new(id, groceryListId, productId, amount);
+                }
+            }
+            CloseConnection();
+            return groceryListItemOnID;
         }
 
         public GroceryListItem? Update(GroceryListItem item)
         {
-            GroceryListItem? listItem = groceryListItems.FirstOrDefault(i => i.Id == item.Id);
-            listItem = item;
-            return listItem;
+            string updateQuery = $"UPDATE GroceryListItems set GroceryListId = {item.GroceryListId}, ProductId = {item.ProductId}, Amount = {item.Amount} WHERE Id = {item.Id}";
+            OpenConnection();
+            using (SqliteCommand command = new(updateQuery, Connection))
+            {
+                command.ExecuteNonQuery();
+            }
+            CloseConnection();
+            return item;
         }
     }
 }
