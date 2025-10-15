@@ -53,7 +53,26 @@ namespace Grocery.Core.Data.Repositories
 
         public Product? Get(int id)
         {
-            return products.FirstOrDefault(p => p.Id == id);
+            Product? productOnId = null;
+            string getProductQuery = $"SELECT * FROM Products WHERE Id = {id}";
+            
+            OpenConnection();
+            using (SqliteCommand command = new(getProductQuery, Connection))
+            {
+                SqliteDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    int productId = reader.GetInt32(0);
+                    string name = reader.GetString(1);
+                    int stock = reader.GetInt32(2);
+                    DateOnly shelfLife = DateOnly.FromDateTime(reader.GetDateTime(3));
+                    decimal price = reader.GetDecimal(4);
+                    productOnId = new(productId, name, stock, shelfLife, price);
+                }
+            }
+            CloseConnection();
+            return productOnId;
+
         }
 
         public Product Add(Product item)
@@ -68,10 +87,14 @@ namespace Grocery.Core.Data.Repositories
 
         public Product? Update(Product item)
         {
-            Product? product = products.FirstOrDefault(p => p.Id == item.Id);
-            if (product == null) return null;
-            product.Id = item.Id;
-            return product;
+            string updateQuery = $"UPDATE Products set Id = {item.Id}, Name = {item.Name}, Stock = {item.Stock}, ShelfLife = {item.ShelfLife}, Price = {item.Price} WHERE Id = {item.Id}";
+            OpenConnection();
+            using (SqliteCommand command = new(updateQuery, Connection))
+            {
+                command.ExecuteNonQuery();
+            }
+            CloseConnection();
+            return item;
         }
     }
 }

@@ -114,11 +114,11 @@ namespace Grocery.Core.Data.Repositories
 
                 while (reader.Read())
                 {
-                    int item_id = reader.GetInt32(0);
+                    int itemId = reader.GetInt32(0);
                     int groceryListId = reader.GetInt32(1);
                     int productId = reader.GetInt32(2);
                     int amount = reader.GetInt32(3);
-                    groceryListItemOnID = new(id, groceryListId, productId, amount);
+                    groceryListItemOnID = new(itemId, groceryListId, productId, amount);
                 }
             }
             CloseConnection();
