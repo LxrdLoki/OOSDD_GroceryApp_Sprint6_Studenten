@@ -4,6 +4,7 @@ using Grocery.Core.Interfaces.Services;
 using Grocery.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,7 +25,10 @@ namespace Grocery.App.ViewModels
         private decimal price = 0.0m;
 
         [ObservableProperty]
-        private DateOnly? shelfLife;
+        private DateOnly shelfLife = DateOnly.FromDateTime(DateTime.Now.AddDays(30));
+
+        [ObservableProperty]
+        private string error = "";
 
         [ObservableProperty]
         Client client;
@@ -40,10 +44,18 @@ namespace Grocery.App.ViewModels
         {
             if (string.IsNullOrWhiteSpace(Name) || Stock < 0)
             {
+                error = "Fout, naam bestaad al of je hebt ene verkeerde voorraad doorgegeven";
                 return;
             }
-            Product newProduct = new Product(0, Name, Stock, ShelfLife ?? default, (decimal)Price);
+            Debug.WriteLine(Price);
+            Price = ConvertPrice(Price);
+            Product newProduct = new Product(33, Name, Stock, ShelfLife, (decimal)Price);
             _productService.Add(newProduct);
+        }
+
+        private decimal ConvertPrice(decimal price)
+        {
+            return Math.Round(price, 2);
         }
     }
 }
