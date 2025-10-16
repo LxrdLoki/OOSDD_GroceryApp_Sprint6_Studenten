@@ -1,17 +1,20 @@
-﻿using Grocery.Core.Interfaces.Repositories;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Grocery.Core.Interfaces.Repositories;
 using Grocery.Core.Models;
 using Microsoft.Data.Sqlite;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 
 namespace Grocery.Core.Data.Repositories
 {
     public class ProductRepository : DatabaseConnection, IProductRepository
     {
-        private readonly List<Product> products = new();
+        private readonly ObservableCollection<Product> products = new();
         public ProductRepository()
         {
             CreateTable(@"
                 DROP TABLE IF EXISTS Products;
+
             ");
             CreateTable(@"
                         CREATE TABLE IF NOT EXISTS Products (
@@ -22,21 +25,6 @@ namespace Grocery.Core.Data.Repositories
                             [Price] INTEGER NOT NULL
                         );
                     ");
-
-            OpenConnection();
-            using (var cmd = new SqliteCommand("PRAGMA table_info(Products);", Connection))
-            {
-                using (var reader = cmd.ExecuteReader())
-                {
-                    Debug.WriteLine("---- Products table columns ----");
-                    while (reader.Read())
-                    {
-                        Debug.WriteLine($"{reader.GetString(1)} ({reader.GetString(2)})");
-                    }
-                }
-            }
-            CloseConnection();
-
             List<string> insertQueries = [
                 @"INSERT OR IGNORE INTO Products(Name, Stock, ShelfLife, Price) VALUES('Melk', 300, '2025-09-25', 0.95)",
                 @"INSERT OR IGNORE INTO Products(Name, Stock, ShelfLife, Price) VALUES('Kaas', 100, '2025-09-30', 7.98)",
@@ -46,7 +34,7 @@ namespace Grocery.Core.Data.Repositories
             InsertMultipleWithTransaction(insertQueries);
             GetAll();
         }
-        public List<Product> GetAll()
+        public ObservableCollection<Product> GetAll()
         {
             products.Clear();
             string selectQuery = "SELECT * FROM Products";
@@ -62,10 +50,13 @@ namespace Grocery.Core.Data.Repositories
                     int stock = reader.GetInt32(2);
                     DateOnly shelfLife = DateOnly.Parse(reader.GetString(3));
                     decimal price = reader.GetDecimal(4);
-                    products.Add(new(id, name, stock, shelfLife, price));
+
+                    Product productToAdd = new Product(id, name, stock, shelfLife, price);
+                    products.Add(productToAdd);
                 }
             }
             CloseConnection();
+
             return products;
         }
 
@@ -110,6 +101,8 @@ namespace Grocery.Core.Data.Repositories
                 command.ExecuteNonQuery();
             }
             CloseConnection();
+            products.Add(item);
+
             return item;
         }
 

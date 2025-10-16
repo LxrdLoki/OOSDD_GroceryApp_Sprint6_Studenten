@@ -1,6 +1,7 @@
 ﻿using Grocery.Core.Interfaces.Repositories;
 using Grocery.Core.Interfaces.Services;
 using Grocery.Core.Models;
+using System.Collections.ObjectModel;
 
 namespace Grocery.Core.Services
 {
@@ -13,7 +14,7 @@ namespace Grocery.Core.Services
             _productRepository = productRepository;
         }
 
-        public List<Product> GetAll()
+        public ObservableCollection<Product> GetAll()
         {
             return _productRepository.GetAll();
         }

@@ -11,6 +11,7 @@ namespace Grocery.Core.Data.Repositories
         public GroceryListItemsRepository()
         {
             CreateTable(@"
+                DROP TABLE IF EXISTS GroceryListItems;
                         CREATE TABLE IF NOT EXISTS GroceryListItems (
                             [Id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                             [GroceryListId] INTEGER NOT NULL,

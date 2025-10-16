@@ -44,13 +44,15 @@ namespace Grocery.App.ViewModels
         {
             if (string.IsNullOrWhiteSpace(Name) || Stock < 0)
             {
-                error = "Fout, naam bestaad al of je hebt ene verkeerde voorraad doorgegeven";
+                Error = "Fout, naam bestaad al of je hebt ene verkeerde voorraad doorgegeven";
                 return;
             }
             Debug.WriteLine(Price);
             Price = ConvertPrice(Price);
-            Product newProduct = new Product(33, Name, Stock, ShelfLife, (decimal)Price);
+            Product newProduct = new Product(0, Name, Stock, ShelfLife, (decimal)Price);
             _productService.Add(newProduct);
+
+            Error = $"Product {Name} is toegevoegd!";
         }
 
         private decimal ConvertPrice(decimal price)
