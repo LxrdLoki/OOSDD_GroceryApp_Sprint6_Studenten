@@ -1,10 +1,11 @@
 ﻿using Grocery.Core.Models;
+using System.Collections.ObjectModel;
 
 namespace Grocery.Core.Interfaces.Repositories
 {
     public interface IProductRepository
     {
-        public List<Product> GetAll();
+        public ObservableCollection<Product> GetAll();
 
         public Product? Get(int id);
 

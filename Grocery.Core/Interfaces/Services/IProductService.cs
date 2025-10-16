@@ -1,10 +1,11 @@
 ﻿using Grocery.Core.Models;
+using System.Collections.ObjectModel;
 
 namespace Grocery.Core.Interfaces.Services
 {
     public interface IProductService
     {
-        public List<Product> GetAll();
+        public ObservableCollection<Product> GetAll();
 
         public Product Add(Product item);
 
