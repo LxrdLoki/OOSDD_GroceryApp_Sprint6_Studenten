@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Grocery.App.ViewModels"
+             x:Class="Grocery.App.Views.NewProductView"
+             x:DataType="vm:NewProductViewModel"
+             Title="NewProductView">
+    <VerticalStackLayout>
+        <StackLayout Padding="20" VerticalOptions="Center">
+            <Label Text="Add a new product" FontSize="24" HorizontalOptions="Center" />
+            <Entry Placeholder="Name" Text="{Binding Name}" />
+            <Entry Placeholder="Stock" Text="{Binding Stock}" Keyboard="Numeric" />
+            <DatePicker MinimumDate="01/01/2022"
+            MaximumDate="12/31/2022"
+            Date="06/21/2022" BindingContext="{Binding ShelfLife}" />
+            <Entry Placeholder="Price" Text="{Binding Price, Mode=TwoWay}" Keyboard="Numeric" />
+            <Button Text="Add product" Command="{Binding AddProductCommand}" />
+            <Label Text="{Binding Error}" TextColor="Red" />
+        </StackLayout>
+    </VerticalStackLayout>
+</ContentPage>
